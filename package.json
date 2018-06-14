@@ -1,0 +1,27 @@
+{
+  "name": "cordova.plugins.linphone",
+  "version": "1.0.0",
+  "cordova_name": "Linphone",
+  "description": "Cordova Linphone Plugin",
+  "author": "Afone",
+  "license": "MIT",
+  "cordova": {
+    "id": "cordova.plugins.linphone",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "cordova",
+    "linphone",
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios",
+    "phonegap"
+  ]
+}

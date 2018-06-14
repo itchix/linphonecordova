@@ -1,0 +1,672 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android"
+    id="cordova.scrachx.linphone"
+    version="1.0.0">
+    <name>LinPhone</name>
+    <description>A plugin to integrate linphone features to cordova</description>
+    <license>MIT</license>
+    <keywords>cordova,phonegap,linphone,liblinphone</keywords>
+
+    <engines>
+        <engine name="cordova-android" version=">=4.0.0" />
+        <engine name="cordova-ios" version=">=4.0.0" />
+    </engines>
+
+    <js-module name="Linphone" src="www/linphone.js">
+        <clobbers target="linphone" />
+    </js-module>
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Linphone">
+                <param name="android-package" value="cordova.scrachx.linphone.Linphone" />
+		          <param name="onload" value="true" />
+            </feature>
+        </config-file>
+
+	    <framework src="com.android.support:support-v4:+" />
+        <framework src="com.android.support:appcompat-v7:+" />
+
+        <config-file target="res/values/strings.xml" parent="/*">
+            <string name="app_name_notification">Linphone VOIP</string>
+            <string name="register_state_notification">État :</string>
+            <string name="visualiser_notification">Visualiser</string>
+        </config-file>
+
+        <source-file src="src/android/Linphone.java" target-dir="src/cordova/scrachx/linphone"  />
+        <source-file src="src/android/LinphoneCallVideoActivity.java" target-dir="src/cordova/scrachx/linphone"  />
+        <source-file src="src/android/LinphoneManager.java" target-dir="src/cordova/scrachx/linphone"  />
+        <source-file src="src/android/LinphoneUtils.java" target-dir="src/cordova/scrachx/linphone" />
+	    <source-file src="src/android/UIThreadDispatcher.java" target-dir="src/cordova/scrachx/linphone" />
+
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+          <activity android:name="cordova.scrachx.linphone.LinphoneCallVideoActivity">
+          </activity>
+        </config-file>
+
+	    <source-file src="res/layout/video_call_fragment.xml" target-dir="res/layout" />
+        <source-file src="res/raw/incoming_chat.wav" target-dir="res/raw" />
+        <source-file src="res/raw/notes_of_the_optimistic.mkv" target-dir="res/raw" />
+        <source-file src="res/raw/linphonerc_default" target-dir="res/raw" />
+        <source-file src="res/raw/linphonerc_factory" target-dir="res/raw" />
+        <source-file src="res/raw/lpconfig.xsd" target-dir="res/raw" />
+        <source-file src="res/raw/oldphone_mono.wav" target-dir="res/raw" />
+        <source-file src="res/raw/ringback.wav" target-dir="res/raw" />
+        <source-file src="res/raw/toy_mono.wav" target-dir="res/raw" />
+        <source-file src="res/raw/rootca.pem" target-dir="res/raw" />
+
+        <framework src="src/android/build.gradle" custom="true" type="gradleReference" />
+        <resource-file src="libs/liblinphone-android-sdk.aar" target="libs/liblinphone-android-sdk.aar" />
+        <source-file src="libs/linphone-android-javadoc.jar" target-dir="libs/" />
+        <source-file src="libs/linphone-android-sources.jar" target-dir="libs/" />
+        <source-file src="src/android/gradle.properties" target-dir="." />
+        <source-file src="src/android/build-extras.gradle" target-dir="." />
+
+	    <config-file target="AndroidManifest.xml" parent="./application/activity">
+            <intent-filter>
+                <action android:name="android.intent.action.CALL" />
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.DIAL" />
+                <action android:name="android.intent.action.CALL_BUTTON" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <data android:scheme="tel" />
+                <data android:scheme="sip" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SENDTO" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="sip" />
+                <data android:scheme="imto" />
+            </intent-filter>
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.INTERNET"/>
+            <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+            <uses-permission android:name="android.permission.READ_CONTACTS"/>
+            <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+            <uses-permission android:name="android.permission.WAKE_LOCK"/>
+            <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS"/>
+            <uses-permission android:name="android.permission.CALL_PHONE"/>
+            <!-- Needed to allow Linphone to install on tablets, since android.permission.CALL_PHONE implies android.hardware.telephony is required -->
+            <uses-feature 	 android:name="android.hardware.telephony" android:required="false" />
+            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+            <uses-permission android:name="android.permission.VIBRATE"/>
+            <uses-permission android:name="android.permission.CAMERA" />
+            <!-- Needed to allow Linphone to install on tablets, since android.permission.CAMERA implies android.hardware.camera and android.hardware.camera.autofocus are required -->
+            <uses-feature 	 android:name="android.hardware.camera" android:required="false" />
+            <uses-permission android:name="android.permission.READ_LOGS" />
+            <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+            <!-- Needed to store received images if the user wants to -->
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+            <!-- Needed to use our own Contact editor -->
+            <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
+            <!-- Needed to route the audio to the bluetooth headset if available -->
+            <uses-permission android:name="android.permission.BLUETOOTH" />
+            <uses-permission android:name="android.permission.BROADCAST_STICKY" />
+            <!-- Needed to pre fill the wizard email field (only if enabled in custom settings) -->
+            <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+            <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+            <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>/
+            <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
+            <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+            <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
+            <!-- Needed for overlay widget -->
+            <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+        </config-file>
+    </platform>
+
+    <!-- ios -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Linphone">
+                <param name="ios-package" value="Linphone"/>
+                <param name="onload" value="true" />
+            </feature>
+        </config-file>
+
+        <header-file src="src/ios/Linphone-Bridging-Header.h"/>
+        <source-file src="src/ios/Linphone.swift"/>
+        <source-file src="src/ios/LinphoneManager.swift"/>
+        <source-file src="src/ios/LinphoneUtils.swift"/>
+
+        <resource-file src="src/ios/sounds/incoming_chat.wav" />
+        <resource-file src="src/ios/sounds/ringback.wav" />
+
+        <header-file src="libs/apple-darwin/include/antlr3.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3baserecognizer.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3basetree.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3basetreeadaptor.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3bitset.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3collections.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3commontoken.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3commontree.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3commontreeadaptor.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3commontreenodestream.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3config.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3convertutf.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3cyclicdfa.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3debugeventlistener.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3defs.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3encodings.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3errors.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3exception.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3filestream.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3input.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3interfaces.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3intstream.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3lexer.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3memory.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3parser.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3parsetree.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3recognizersharedstate.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3rewritestreams.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3string.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3tokenstream.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/antlr3treeparser.h" target-dir="" />
+        <header-file src="libs/apple-darwin/include/bctoolbox/bc_vfs.h" target-dir="bctoolbox" />
+        <header-file src="libs/apple-darwin/include/bctoolbox/crypto.h" target-dir="bctoolbox" />
+        <header-file src="libs/apple-darwin/include/bctoolbox/list.h" target-dir="bctoolbox" />
+        <header-file src="libs/apple-darwin/include/bctoolbox/logging.h" target-dir="bctoolbox" />
+        <header-file src="libs/apple-darwin/include/bctoolbox/map.h" target-dir="bctoolbox" />
+        <header-file src="libs/apple-darwin/include/bctoolbox/port.h" target-dir="bctoolbox" />
+        <header-file src="libs/apple-darwin/include/bctoolbox/tester.h" target-dir="bctoolbox" />
+        <header-file src="libs/apple-darwin/include/belle-sip/auth-helper.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/belle-sdp.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/belle-sip.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/bodyhandler.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/defs.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/dialog.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/dict.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/generic-uri.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/headers.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/http-listener.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/http-message.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/http-provider.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/list.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/listener.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/listeningpoint.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/mainloop.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/message.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/object.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/parameters.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/provider.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/refresher.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/resolver.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/sipstack.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/sip-uri.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/transaction.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/types.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/utils.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/belle-sip/wakelock.h" target-dir="belle-sip" />
+        <header-file src="libs/apple-darwin/include/bzrtp/bzrtp.h" target-dir="bzrtp" />
+        <header-file src="libs/apple-darwin/include/corec/banned.h" target-dir="corec" />
+        <header-file src="libs/apple-darwin/include/corec/confhelper.h" target-dir="corec" />
+        <header-file src="libs/apple-darwin/include/corec/config.h" target-dir="corec" />
+        <header-file src="libs/apple-darwin/include/corec/corec.h" target-dir="corec" />
+        <header-file src="libs/apple-darwin/include/corec/err.h" target-dir="corec" />
+        <header-file src="libs/apple-darwin/include/corec/helper.h" target-dir="corec" />
+        <header-file src="libs/apple-darwin/include/corec/memalloc.h" target-dir="corec" />
+        <header-file src="libs/apple-darwin/include/corec/memheap.h" target-dir="corec" />
+        <header-file src="libs/apple-darwin/include/corec/portab.h" target-dir="corec" />
+        <header-file src="libs/apple-darwin/include/corec/array/array.h" target-dir="corec/array" />
+        <header-file src="libs/apple-darwin/include/corec/multithread/multithread.h" target-dir="corec/multithread" />
+        <header-file src="libs/apple-darwin/include/corec/node/node.h" target-dir="corec/node" />
+        <header-file src="libs/apple-darwin/include/corec/node/nodebase.h" target-dir="corec/node" />
+        <header-file src="libs/apple-darwin/include/corec/node/node_internal.h" target-dir="corec/node" />
+        <header-file src="libs/apple-darwin/include/corec/node/nodetools.h" target-dir="corec/node" />
+        <header-file src="libs/apple-darwin/include/corec/node/nodetree.h" target-dir="corec/node" />
+        <header-file src="libs/apple-darwin/include/corec/str/str.h" target-dir="corec/str" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/charconvert/charconvert.h" target-dir="corec/helpers/charconvert" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/date/date.h" target-dir="corec/helpers/date" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/file/file.h" target-dir="corec/helpers/file" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/file/streams.h" target-dir="corec/helpers/file" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/md5/md5.h" target-dir="corec/helpers/md5" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/parser/buffer.h" target-dir="corec/helpers/parser" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/parser/dataheap.h" target-dir="corec/helpers/parser" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/parser/hotkey.h" target-dir="corec/helpers/parser" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/parser/nodelookup.h" target-dir="corec/helpers/parser" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/parser/parser.h" target-dir="corec/helpers/parser" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/parser/strtab.h" target-dir="corec/helpers/parser" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/parser/strtypes.h" target-dir="corec/helpers/parser" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/parser/urlpart.h" target-dir="corec/helpers/parser" />
+        <header-file src="libs/apple-darwin/include/corec/helpers/system/ccsystem.h" target-dir="corec/helpers/system" />
+        <header-file src="libs/apple-darwin/include/CUnit/Automated.h" target-dir="CUnit" />
+        <header-file src="libs/apple-darwin/include/CUnit/Basic.h" target-dir="CUnit" />
+        <header-file src="libs/apple-darwin/include/CUnit/CUError.h" target-dir="CUnit" />
+        <header-file src="libs/apple-darwin/include/CUnit/CUnit.h" target-dir="CUnit" />
+        <header-file src="libs/apple-darwin/include/CUnit/CUnit_intl.h" target-dir="CUnit" />
+        <header-file src="libs/apple-darwin/include/CUnit/MyMem.h" target-dir="CUnit" />
+        <header-file src="libs/apple-darwin/include/CUnit/TestDB.h" target-dir="CUnit" />
+        <header-file src="libs/apple-darwin/include/CUnit/TestRun.h" target-dir="CUnit" />
+        <header-file src="libs/apple-darwin/include/CUnit/Util.h" target-dir="CUnit" />
+        <header-file src="libs/apple-darwin/include/ebml/ebml.h" target-dir="ebml" />
+        <header-file src="libs/apple-darwin/include/ebml/ebml_internal.h" target-dir="ebml" />
+        <header-file src="libs/apple-darwin/include/gsm/gsm.h" target-dir="gsm" />
+        <header-file src="libs/apple-darwin/include/libavcodec/avcodec.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/avfft.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/d3d11va.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/dv_profile.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/dxva2.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/old_codec_ids.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/qsv.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/vaapi.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/vda.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/vdpau.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/version.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/videotoolbox.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/vorbis_parser.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavcodec/xvmc.h" target-dir="libavcodec" />
+        <header-file src="libs/apple-darwin/include/libavutil/adler32.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/aes.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/attributes.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/audioconvert.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/audio_fifo.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/avassert.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/avconfig.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/avstring.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/avutil.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/base64.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/blowfish.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/bprint.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/bswap.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/buffer.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/camellia.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/cast5.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/channel_layout.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/common.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/cpu.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/crc.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/dict.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/display.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/downmix_info.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/error.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/eval.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/ffversion.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/fifo.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/file.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/frame.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/hash.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/hmac.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/imgutils.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/intfloat.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/intreadwrite.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/lfg.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/log.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/macros.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/mathematics.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/md5.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/mem.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/motion_vector.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/murmur3.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/old_pix_fmts.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/opt.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/parseutils.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/pixdesc.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/pixelutils.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/pixfmt.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/random_seed.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/rational.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/replaygain.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/ripemd.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/samplefmt.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/sha.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/sha512.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/stereo3d.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/tea.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/threadmessage.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/time.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/timecode.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/timestamp.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/twofish.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/version.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libavutil/xtea.h" target-dir="libavutil" />
+        <header-file src="libs/apple-darwin/include/libswresample/swresample.h" target-dir="libswresample" />
+        <header-file src="libs/apple-darwin/include/libswresample/version.h" target-dir="libswresample" />
+        <header-file src="libs/apple-darwin/include/libswscale/swscale.h" target-dir="libswscale" />
+        <header-file src="libs/apple-darwin/include/libswscale/version.h" target-dir="libswscale" />
+        <header-file src="libs/apple-darwin/include/linphone/account_creator.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/buffer.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/call_log.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/call_params.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/carddav.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/conference.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/content.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/event.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/friendlist.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/liblinphone_tester.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/linphonecore.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/linphonecore_utils.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/linphonefriend.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/linphonepresence.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/linphone_proxy_config.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/linphone_tunnel.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/lpc2xml.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/lpconfig.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/ringtoneplayer.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/sipsetup.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/sqlite3_bctbx_vfs.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/vcard.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/xml2lpc.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/linphone/xmlrpc.h" target-dir="linphone" />
+        <header-file src="libs/apple-darwin/include/matroska/matroska.h" target-dir="matroska" />
+        <header-file src="libs/apple-darwin/include/matroska/matroska_internal.h" target-dir="matroska" />
+        <header-file src="libs/apple-darwin/include/matroska/matroska_sem.h" target-dir="matroska" />
+        <header-file src="libs/apple-darwin/include/mbedtls/aes.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/aesni.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/arc4.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/asn1.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/asn1write.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/base64.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/bignum.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/blowfish.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/bn_mul.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/camellia.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ccm.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/certs.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/check_config.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/cipher.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/cipher_internal.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/compat-1.3.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/config.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ctr_drbg.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/debug.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/des.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/dhm.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ecdh.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ecdsa.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ecjpake.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ecp.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/entropy.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/entropy_poll.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/error.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/gcm.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/havege.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/hmac_drbg.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/md.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/md2.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/md4.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/md5.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/md_internal.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/memory_buffer_alloc.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/net.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/oid.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/padlock.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/pem.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/pk.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/pkcs5.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/pkcs11.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/pkcs12.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/pk_internal.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/platform.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ripemd160.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/rsa.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/sha1.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/sha256.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/sha512.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ssl.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ssl_cache.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ssl_ciphersuites.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ssl_cookie.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ssl_internal.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/ssl_ticket.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/threading.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/timing.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/version.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/x509.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/x509_crl.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/x509_crt.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/x509_csr.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mbedtls/xtea.h" target-dir="mbedtls" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/allfilters.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/bitratecontrol.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/bits_rw.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/devices.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/dsptools.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/dtls_srtp.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/dtmfgen.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/flowcontrol.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/formats.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/ice.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/mediastream.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msaudiomixer.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/mschanadapter.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/mscodecutils.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/mscommon.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msconference.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msequalizer.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/mseventqueue.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msextdisplay.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msfactory.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msfileplayer.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msfilerec.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msfilter.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msgenericplc.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msinterfaces.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msitc.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msjava.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msjpegwriter.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msmediaplayer.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msqueue.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msrtp.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msrtt4103.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/mssndcard.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/ms_srtp.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/mstee.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msticker.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/mstonedetector.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msutils.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msv4l.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msvaddtx.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msvideo.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msvideoout.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msvideopresets.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/msvolume.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/mswebcam.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/qualityindicator.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/rfc3984.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/stun.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/stun_udp.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/upnp_igd.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/x11_helper.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/mediastreamer2/zrtp.h" target-dir="mediastreamer2" />
+        <header-file src="libs/apple-darwin/include/opus/opus.h" target-dir="opus" />
+        <header-file src="libs/apple-darwin/include/opus/opus_custom.h" target-dir="opus" />
+        <header-file src="libs/apple-darwin/include/opus/opus_defines.h" target-dir="opus" />
+        <header-file src="libs/apple-darwin/include/opus/opus_multistream.h" target-dir="opus" />
+        <header-file src="libs/apple-darwin/include/opus/opus_types.h" target-dir="opus" />
+        <header-file src="libs/apple-darwin/include/ortp/b64.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/event.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/logging.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/ortp.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/payloadtype.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/port.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/rtcp.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/rtp.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/rtpprofile.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/rtpsession.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/rtpsignaltable.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/sessionset.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/str_utils.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/ortp/telephonyevents.h" target-dir="ortp" />
+        <header-file src="libs/apple-darwin/include/speex/speex.h" target-dir="speex" />
+        <header-file src="libs/apple-darwin/include/speex/speex_bits.h" target-dir="speex" />
+        <header-file src="libs/apple-darwin/include/speex/speex_buffer.h" target-dir="speex" />
+        <header-file src="libs/apple-darwin/include/speex/speex_callbacks.h" target-dir="speex" />
+        <header-file src="libs/apple-darwin/include/speex/speex_config_types.h" target-dir="speex" />
+        <header-file src="libs/apple-darwin/include/speex/speex_echo.h" target-dir="speex" />
+        <header-file src="libs/apple-darwin/include/speex/speex_header.h" target-dir="speex" />
+        <header-file src="libs/apple-darwin/include/speex/speex_jitter.h" target-dir="speex" />
+        <header-file src="libs/apple-darwin/include/speex/speex_preprocess.h" target-dir="speex" />
+        <header-file src="libs/apple-darwin/include/speex/speex_resampler.h" target-dir="speex" />
+        <header-file src="libs/apple-darwin/include/speex/speex_stereo.h" target-dir="speex" />
+        <header-file src="libs/apple-darwin/include/speex/speex_types.h" target-dir="speex" />
+        <header-file src="libs/apple-darwin/include/srtp/aes.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/aes_cbc.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/aes_icm.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/alloc.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/auth.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/cipher.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/config.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/crypto.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/cryptoalg.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/crypto_kernel.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/crypto_math.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/crypto_types.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/datatypes.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/ekt.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/err.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/getopt_s.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/gf2_8.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/hmac.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/integers.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/kernel_compat.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/key.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/null_auth.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/null_cipher.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/prng.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/rand_source.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/rdb.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/rdbx.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/rtp.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/rtp_priv.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/sha1.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/srtp.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/srtp_priv.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/stat.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/ut_sim.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/srtp/xfm.h" target-dir="srtp" />
+        <header-file src="libs/apple-darwin/include/vpx/vp8.h" target-dir="vpx" />
+        <header-file src="libs/apple-darwin/include/vpx/vp8cx.h" target-dir="vpx" />
+        <header-file src="libs/apple-darwin/include/vpx/vp8dx.h" target-dir="vpx" />
+        <header-file src="libs/apple-darwin/include/vpx/vpx_codec.h" target-dir="vpx" />
+        <header-file src="libs/apple-darwin/include/vpx/vpx_decoder.h" target-dir="vpx" />
+        <header-file src="libs/apple-darwin/include/vpx/vpx_encoder.h" target-dir="vpx" />
+        <header-file src="libs/apple-darwin/include/vpx/vpx_frame_buffer.h" target-dir="vpx" />
+        <header-file src="libs/apple-darwin/include/vpx/vpx_image.h" target-dir="vpx" />
+        <header-file src="libs/apple-darwin/include/vpx/vpx_integer.h" target-dir="vpx" />
+
+        <source-file src="libs/apple-darwin/lib/libantlr3c.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libavcodec.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libavutil.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libbcg729.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libbctoolbox.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libbctoolbox-tester.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libbelcard.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libbellesip.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libbelr.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libbv16.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libbzrtp.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libcorec.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libcunit.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libebml2.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libgsm.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/liblinphone.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/liblinphonetester.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libmatroska2.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libmbedcrypto.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libmbedtls.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libmbedx509.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libmediastreamer_base.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libmediastreamer_voip.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libopencore-amrnb.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libopencore-amrwb.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libopenh264.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libopus.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libortp.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libpolarssl.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libspeex.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libspeexdsp.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libsrtp.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libswresample.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libswscale.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libtunnel.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libvo-amrwbenc.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libvpx.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/libx264.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/mediastreamer/plugins/libmsamr.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/mediastreamer/plugins/libmsbcg729.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/mediastreamer/plugins/libmsopenh264.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/mediastreamer/plugins/libmssilk.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/mediastreamer/plugins/libmswebrtc.a" framework="true" />
+        <source-file src="libs/apple-darwin/lib/mediastreamer/plugins/libmsx264.a" framework="true" />
+
+        <framework src="CoreVideo.framework" />
+        <framework src="VideoToolbox.framework" />
+        <framework src="CoreTelephony.framework" />
+        <framework src="AudioToolbox.framework" />
+        <framework src="AVFoundation.framework" weak="true" />
+        <framework src="CFNetwork.framework" weak="true" />
+        <framework src="CoreGraphics.framework" />
+        <framework src="MediaPlayer.framework" />
+        <framework src="OpenGLES.framework" />
+        <framework src="CoreMedia.framework" weak="true" />
+        <framework src="CoreVideo.framework"/>
+        <framework src="MessageUI.framework" />
+        <framework src="OpenGLES.framework" />
+        <framework src="MobileCoreServices.framework" />
+        <framework src="Security.framework" />
+        <framework src="SafariServices.framework"/>
+        <framework src="SystemConfiguration.framework" />
+        <framework src="QuartzCore.framework" />
+        <framework src="UIKit.framework" weak="true" />
+        <framework src="libc++.1.dylib" />
+        <framework src="libsqlite3.dylib" />
+        <framework src="libxml2.dylib" />
+        <framework src="libstdc++.6.dylib" />
+        <framework src="libz.dylib" />
+        <framework src="libresolv.dylib" />
+        <framework src="libiconv.dylib" />
+        <framework src="libantlr3c.a" />
+        <framework src="libavcodec.a" />
+        <framework src="libavutil.a" />
+        <framework src="libbcg729.a" />
+        <framework src="libbctoolbox.a" />
+        <framework src="libbctoolbox-tester.a" />
+        <framework src="libbelcard.a" />
+        <framework src="libbellesip.a" />
+        <framework src="libbelr.a" />
+        <framework src="libbv16.a" />
+        <framework src="libbzrtp.a" />
+        <framework src="libcorec.a" />
+        <framework src="libcunit.a" />
+        <framework src="libebml2.a" />
+        <framework src="libgsm.a" />
+        <framework src="liblinphone.a" />
+        <framework src="liblinphonetester.a" />
+        <framework src="libmatroska2.a" />
+        <framework src="libmbedcrypto.a" />
+        <framework src="libmbedtls.a" />
+        <framework src="libmbedx509.a" />
+        <framework src="libmediastreamer_base.a" />
+        <framework src="libmediastreamer_voip.a" />
+        <framework src="libopencore-amrnb.a" />
+        <framework src="libopencore-amrwb.a" />
+        <framework src="libopenh264.a" />
+        <framework src="libopus.a" />
+        <framework src="libortp.a" />
+        <framework src="libpolarssl.a" />
+        <framework src="libspeex.a" />
+        <framework src="libspeexdsp.a" />
+        <framework src="libsrtp.a" />
+        <framework src="libswresample.a" />
+        <framework src="libswscale.a" />
+        <framework src="libtunnel.a" />
+        <framework src="libvo-amrwbenc.a" />
+        <framework src="libvpx.a" />
+        <framework src="libx264.a" />
+        <framework src="libmsamr.a" />
+        <framework src="libmsbcg729.a" />
+        <framework src="libmsopenh264.a" />
+        <framework src="libmssilk.a" />
+        <framework src="libmswebrtc.a" />
+        <framework src="libmsx264.a" />
+
+        <dependency id="cordova-plugin-add-swift-support" version="1.6.1"/>
+    </platform>
+
+</plugin>
